@@ -1,13 +1,78 @@
 import React, {Component} from 'react';
-import Post from "./Post";
+import InstaService from "../services/instaService";
+import User from "./User";
+import ErrorMessage from "./Error";
 
 
 export default class Posts extends Component {
+
+    InstaService = new InstaService();
+    state ={
+        posts:[],
+        error: false
+    }
+
+    componentDidMount() {
+        this.updatePosts()
+    }
+
+    updatePosts(){
+        this.InstaService.getAllPosts()
+       .then(this.onPostsLoaded)
+       .catch(this.onError);
+    }
+
+    onPostsLoaded = (posts) =>{
+        this.setState({
+            posts,
+            error: false
+        })
+        console.log(this.state.posts)
+    }
+
+    onError =() =>{
+        this.setState({
+            error: true
+        })
+    }
+
+    renderItem(arr) {
+        return arr.map(item =>{
+            const {name, altname, photo, src, alt, descr, id} = item;
+            return(
+                <div key={id} className='post'>
+                    <User
+                        src={photo}
+                        alt={altname}
+                        name={name}
+                        min={true}
+                    />
+                    <img src={src} alt={alt}/>
+                    <div className='post__name'>
+                        {name}
+                    </div>
+                    <div className='post__des'>
+                        {descr}
+                    </div>
+                </div>
+            )
+        })
+    }
+
+
+
+
+
     render() {
+        const {error, posts} = this.state;
+        const items = this.renderItem(posts)
+
+        if(error){
+            return <ErrorMessage/>
+        }
         return(
             <div className="left">
-                <Post src='https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQ2bLEr8wWugR2yZaJtuy7RHGAgEUoYDNDWJCs4GbS88oA3ZiAE' alt='first'/>
-                <Post src='https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcQ0wYg0B1U2wgtUmysZ0l6_zg9G_Kt3t0cNtS-A81T57GwCN2DY' alt='first'/>
+                {items}
             </div>
         )
     }
